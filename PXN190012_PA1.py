@@ -1,33 +1,18 @@
 # decision_tree.py
-# ---------
-# Licensing Information:  You are free to use or extend these projects for
-# personal and educational purposes provided that (1) you do not distribute
-# or publish solutions, (2) you retain this notice, and (3) you provide clear
-# attribution to UT Dallas, including a link to http://cs.utdallas.edu.
-#
-# This file is part of Programming Assignment 1 for CS6375: Machine Learning.
-# Gautam Kunapuli (gautam.kunapuli@utdallas.edu)
-# Sriraam Natarajan (sriraam.natarajan@utdallas.edu),
-#
-#
-# INSTRUCTIONS:
-# ------------
-# 1. This file contains a skeleton for implementing the ID3 algorithm for
-# Decision Trees. Insert your code into the various functions that have the
-# comment "INSERT YOUR CODE HERE".
-#
-# 2. Do NOT modify the classes or functions that have the comment "DO NOT
-# MODIFY THIS FUNCTION".
-#
-# 3. Do not modify the function headers for ANY of the functions.
-#
-# 4. You may add any other helper functions you feel you may need to print,
-# visualize, test, or save the data and results. However, you MAY NOT utilize
-# the package scikit-learn OR ANY OTHER machine learning package in THIS file.
+
+#Submitted By:
+#Asif Sohail Mohammed - AXM190041
+#Pragya Nagpal - PXN190012
+
+#LINE 15: For using graphviz path of where graphviz is installed in anaconda is added to environment variable 
 
 import numpy as np
 import matplotlib.pyplot as plt
-
+from sklearn import tree
+from sklearn import metrics
+import graphviz
+import os
+os.environ["PATH"] += os.pathsep + 'C:/Users/Pragya/Anaconda3/Library/bin/graphviz/'
 
 def partition(x):
     """
@@ -126,7 +111,6 @@ def id3(x, y, attribute_value_pairs=None, depth=0, max_depth=5):
         for j in values:
             tup = (i, j)
             attribute_value_pairs.append(tup)
-
     # Condition 1
     z = partition(y)
     if(len(z) == 1):
@@ -152,8 +136,6 @@ def id3(x, y, attribute_value_pairs=None, depth=0, max_depth=5):
             values = np.unique(x[:,i])
             for j in values:
                 ig = mutual_information(np.where(x[:, i] == j)[0],y)
-                # ig = mutual_information(np.extract(x[:, i] == j, x[:, i]), y)
-                # print("For Tuple (%d, %d) Information Gain is %f" % (i , j, ig))
                 if(ig > max_ig):
                     max_ig = ig
                     max_ig_tup = (i, j)
@@ -244,22 +226,38 @@ def conf_matrix(ytst, y_pred):
     cm[1][1] = tn
     return cm
 
+def defaultDT(Xtrn,ytrn,Xtst,ytst,name):
+    classify = tree.DecisionTreeClassifier()
+    classify = classify.fit(Xtrn, ytrn)
+    ypred=classify.predict(Xtst)
+
+    print("Accuracy:", metrics.accuracy_score(ytst, ypred))
+
+    dot_data = tree.export_graphviz(classify, out_file=None) 
+    graph = graphviz.Source(dot_data) 
+    graph.render(name) #for saving the decision tree as pdf with name
+    print(conf_matrix(ytst, ypred))
+
 if __name__ == '__main__':
     # MONK's 1
     # Load the training data
-    M = np.genfromtxt('c:/Users\moham\Decision-Tree-ID3\monks-1.train', missing_values=0, skip_header=0, delimiter=',', dtype=int)
+    M = np.genfromtxt('./data/monks-1.train', missing_values=0, skip_header=0, delimiter=',', dtype=int)
     ytrn = M[:, 0]
     Xtrn = M[:, 1:]
 
     # Load the test data
-    M = np.genfromtxt('c:/Users\moham\Decision-Tree-ID3\monks-1.test', missing_values=0, skip_header=0, delimiter=',', dtype=int)
+    M = np.genfromtxt('./data/monks-1.test', missing_values=0, skip_header=0, delimiter=',', dtype=int)
     ytst = M[:, 0]
     Xtst = M[:, 1:]
-
+    
+    #default sklearn model for Monks-1 (part C of assignment)
+    print("Sklearn default decision Tree for monks-1")
+    defaultDT(Xtrn,ytrn,Xtst,ytst,"monks-1")
+    
     x = np.arange(1, 11)
     test_error1 = []
     train_error1 = []
-    for i in range(1, 11):
+    for i in range(1, 11):    #calculation on monks-1 for depth=1..10 (part A of assignment)
         print("depth is", i)
         # Learn a decision tree of depth 3
         decision_tree = id3(Xtrn, ytrn, max_depth=i)
@@ -275,7 +273,7 @@ if __name__ == '__main__':
         y_pred = [predict_example(x, decision_tree) for x in Xtst]
         tst_err = compute_error(ytst, y_pred)
 
-        # Confusion Matrix
+        # Confusion Matrix for monks 1 depth 1 and 2 (part B of assignment)
         if(i == 1):
             monks1_depth1_cm = conf_matrix(ytst, y_pred)
         elif(i == 2):
@@ -298,18 +296,18 @@ if __name__ == '__main__':
 
     # MONK's 2
     # Load the training data
-    M = np.genfromtxt('c:/Users\moham\Decision-Tree-ID3\monks-2.train', missing_values=0, skip_header=0, delimiter=',', dtype=int)
+    M = np.genfromtxt('./data/monks-2.train', missing_values=0, skip_header=0, delimiter=',', dtype=int)
     ytrn = M[:, 0]
     Xtrn = M[:, 1:]
 
     # Load the test data
-    M = np.genfromtxt('c:/Users\moham\Decision-Tree-ID3\monks-2.test', missing_values=0, skip_header=0, delimiter=',', dtype=int)
+    M = np.genfromtxt('./data/monks-2.test', missing_values=0, skip_header=0, delimiter=',', dtype=int)
     ytst = M[:, 0]
     Xtst = M[:, 1:]
 
     test_error2 = []
     train_error2 = []
-    for i in range(1, 11):
+    for i in range(1, 11):    #calculation on monks-2 for depth=1..10 (part A of assignment)
         print("Depth is", i)
         # Learn a decision tree of depth 3
         decision_tree = id3(Xtrn, ytrn, max_depth=i)
@@ -342,18 +340,18 @@ if __name__ == '__main__':
 
     # MONK's 3
     # Load the training data
-    M = np.genfromtxt('c:/Users\moham\Decision-Tree-ID3\monks-3.train', missing_values=0, skip_header=0, delimiter=',', dtype=int)
+    M = np.genfromtxt('./data/monks-3.train', missing_values=0, skip_header=0, delimiter=',', dtype=int)
     ytrn = M[:, 0]
     Xtrn = M[:, 1:]
 
     # Load the test data
-    M = np.genfromtxt('c:/Users\moham\Decision-Tree-ID3\monks-3.test', missing_values=0, skip_header=0, delimiter=',', dtype=int)
+    M = np.genfromtxt('./data/monks-3.test', missing_values=0, skip_header=0, delimiter=',', dtype=int)
     ytst = M[:, 0]
     Xtst = M[:, 1:]
 
     test_error3 = []
     train_error3 = []
-    for i in range(1, 11):
+    for i in range(1, 11):   #calculation on monks-3 for depth=1..10 (part A of assignment)
         # Learn a decision tree of depth 1 to 10
         print("Depth is", i)
         decision_tree = id3(Xtrn, ytrn, max_depth=i)
@@ -386,17 +384,21 @@ if __name__ == '__main__':
 
     
 
-    # d. Other Data Sets
+    # Part D Other Data Sets-Balance-scale
     # Load the training data
-    M = np.genfromtxt('c:/Users\moham\Decision-Tree-ID3\\balance-scale.train', missing_values=0, skip_header=0, delimiter=',', dtype=int)
+    M = np.genfromtxt('./data/balance-scale.train', missing_values=0, skip_header=0, delimiter=',', dtype=int)
     ytrn = M[:, 0]
     Xtrn = M[:, 1:]
 
     # Load the test data
-    M = np.genfromtxt('c:/Users\moham\Decision-Tree-ID3\\balance-scale.test', missing_values=0, skip_header=0, delimiter=',', dtype=int)
+    M = np.genfromtxt('./data/balance-scale.test', missing_values=0, skip_header=0, delimiter=',', dtype=int)
     ytst = M[:, 0]
     Xtst = M[:, 1:]
 
+    #default sklearn model for Balance Scale
+    print("Sklearn default decision Tree for balance-scale")
+    defaultDT(Xtrn,ytrn,Xtst,ytst,"balance-scale")
+    
     test_error_other = []
     train_error_other = []
     for i in range(1, 11):
@@ -409,7 +411,7 @@ if __name__ == '__main__':
         y_pred = [predict_example(x, decision_tree) for x in Xtrn]
         trn_err = compute_error(ytrn, y_pred)
 
-        print('Balance Scale Train Error = {0:4.2f}%.'.format(trn_err * 100))
+        print('Monk\'s 3 Train Error = {0:4.2f}%.'.format(trn_err * 100))
 
         # Compute the test error
         y_pred = [predict_example(x, decision_tree) for x in Xtst]
@@ -421,7 +423,7 @@ if __name__ == '__main__':
         elif(i == 2):
             other_depth2_cm = conf_matrix(ytst, y_pred)
 
-        print('Balance Scale Test Error = {0:4.2f}%.'.format(tst_err * 100))
+        print('Monk\'s 3 Test Error = {0:4.2f}%.'.format(tst_err * 100))
 
         train_error_other.append(trn_err * 100)
         test_error_other.append(tst_err * 100)
@@ -439,5 +441,5 @@ if __name__ == '__main__':
     
     print("Confusion matrix for Monk's 1 Depth 1 is\n", monks1_depth2_cm)
     print("Confusion matrix for Monk's 1 Depth 2 is\n", monks1_depth2_cm)
-    print("Confusion matrix for Balance Data Set Depth 1 is\n", other_depth1_cm)
-    print("Confusion matrix for Balance Scale Data Set Depth 2 is\n", other_depth2_cm)
+    print("Confusion matrix for Balance-Scale Dataset Depth 1 is\n", other_depth1_cm)
+    print("Confusion matrix for Balance-Scale DataSet Depth 2 is\n", other_depth2_cm)

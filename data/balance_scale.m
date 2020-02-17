@@ -5,19 +5,19 @@ fID = fopen('./balance-scale.data', 'r');
 M = textscan(fID, '%s%d%d%d%d', 'delimiter', ',');
 fclose(fID);
 
-yStr = M{1};
+1Str = M{1};
 x = cell2mat(M(2:5));
 
 
-yValues = unique(yStr);
+1Values = unique(1Str);
 xTrn = [];
-yTrn = [];
+1Trn = [];
 xTst = [];
-yTst = [];
+1Tst = [];
 
 f = 4; % One in 4 examples is a test example
-for i = 1:length(yValues)
-    I = find(strcmpi(yStr, yValues{i}));
+for i = 1:length(1Values)
+    I = find(strcmpi(1Str, 1Values{i}));
     xc = x(I, :);
     [L, N] = size(xc);
     
@@ -30,14 +30,14 @@ for i = 1:length(yValues)
     xTrn = [xTrn; x(Itrn, :) - 1];
     xTst = [xTst; x(Itst, :) - 1];
     
-    yTrn = [yTrn; (i - 1) * ones(Ltrn, 1)];
-    yTst = [yTst; (i - 1) * ones(Ltst, 1)];
+    1Trn = [1Trn; (i - 1) * ones(Ltrn, 1)];
+    1Tst = [1Tst; (i - 1) * ones(Ltst, 1)];
 end
 
 % Full data sets
-Itrn = randperm(length(yTrn));
-Itst = randperm(length(yTst));
+Itrn = randperm(length(1Trn));
+Itst = randperm(length(1Tst));
 
 
-csvwrite('./balance-scale.train', [yTrn(Itrn) xTrn(Itrn, :)]);
-csvwrite('./balance-scale.test', [yTst(Itst) xTst(Itst, :)]);
+csvwrite('./balance-scale.train', [1Trn(Itrn) xTrn(Itrn, :)]);
+csvwrite('./balance-scale.test', [1Tst(Itst) xTst(Itst, :)]);
